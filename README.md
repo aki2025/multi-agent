@@ -1,6 +1,6 @@
 
 
-*************************************** More learing dewsign ways to do *****************************************************
+*************************************** More leanring  ways to do *****************************************************
 This code is a Streamlit-based web application that demonstrates a Mixture-of-Agents (MoA) approach using multiple large language models (LLMs) to answer a user's question. The app sends the user's query to several open-source LLMs, collects their responses, and then aggregates these responses into a single, high-quality answer using another LLM (the "aggregator model").
 
 Here’s a detailed breakdown of what the code does:
