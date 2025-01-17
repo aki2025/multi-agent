@@ -8,106 +8,46 @@ Here’s a detailed breakdown of what the code does:
 
 1. Setup and Imports
 
+<img width="534" alt="image" src="https://github.com/user-attachments/assets/611acf74-764d-40cb-8943-9a51ad805e5c" />
 
-    import streamlit as st
-    import asyncio
-    import os
-    from together import AsyncTogether, Together
-    Streamlit: Used to create the web app interface.
-    
-    asyncio: Enables asynchronous programming to handle multiple LLM calls concurrently.
-    
-    os: Used to set environment variables (e.g., API key).
-
-    together: A library for interacting with the Together API, which provides access to various LLMs.
 
 2. Streamlit App Setup
 
+<img width="257" alt="image" src="https://github.com/user-attachments/assets/d5eca911-8094-494b-afe3-7ac4f7a2bda2" />
 
-    st.title("Mixture-of-Agents LLM App")
-    Sets the title of the Streamlit app.
 
 3. API Key Input
 
+<img width="461" alt="image" src="https://github.com/user-attachments/assets/fe710d97-99ec-47df-bf1c-65729cf01e2c" />
 
-    together_api_key = st.text_input("Enter your Together API Key:", type="password")
-    Prompts the user to input their Together API key, which is required to access the LLMs.
 
 4. Initialize Together Client
 
+<img width="473" alt="image" src="https://github.com/user-attachments/assets/ce199f6b-0b3c-4934-9bdd-ccb657663f4d" />
 
-    if together_api_key:
-        os.environ["TOGETHER_API_KEY"] = together_api_key
-        client = Together(api_key=together_api_key)
-        async_client = AsyncTogether(api_key=together_api_key)
-    If the API key is provided, it is stored in the environment variable TOGETHER_API_KEY.
-    
-    Initializes synchronous (client) and asynchronous (async_client) Together API clients.
 
 5. Define Models
 
-
-    reference_models = [
-        "Qwen/Qwen2-72B-Instruct",
-        "Qwen/Qwen1.5-72B-Chat",
-        "mistralai/Mixtral-8x22B-Instruct-v0.1",
-        "databricks/dbrx-instruct",
-    ]
-    aggregator_model = "mistralai/Mixtral-8x22B-Instruct-v0.1"
-    reference_models: A list of LLMs that will generate individual responses to the user's query.
-    aggregator_model: The LLM that will aggregate the responses from the reference models into a final answer.
+<img width="571" alt="image" src="https://github.com/user-attachments/assets/63e38d5a-c7cc-430f-9c8f-8dfdcd471e65" />
 
 7. Aggregator System Prompt
 
+<img width="865" alt="image" src="https://github.com/user-attachments/assets/4db45565-a3b5-4283-bd59-ac1cd0b86331" />
 
-    aggregator_system_prompt = """You have been provided with a set of responses from various open-source models to the latest user query. Your task is to synthesize these responses into a single, high-quality response. It is crucial to critically evaluate the information provided in these responses, recognizing that some of it may be biased or incorrect. Your response should not simply replicate the given answers but should offer a refined, accurate, and comprehensive reply to the instruction. Ensure your response is well-structured, coherent, and adheres to the highest standards of accuracy and reliability. Responses from models:"""
-    Defines the system prompt for the aggregator model, instructing it to synthesize and refine the responses from the reference models.
 
 7. User Input
 
-
-    user_prompt = st.text_input("Enter your question:")
-    Prompts the user to input their question.
+<img width="295" alt="image" src="https://github.com/user-attachments/assets/b9ffe6da-fdf3-48b4-8bff-27db19778296" />
 
 8. Asynchronous Function to Run LLMs
 
-    
-    async def run_llm(model):
-        """Run a single LLM call with a reference model."""
-        response = await async_client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": user_prompt}],
-            temperature=0.7,
-            max_tokens=512,
-        )
-        return model, response.choices[0].message.content
-    Asynchronously sends the user's query to a specific LLM and retrieves its response.
-    
-    Returns the model name and its response.
+<img width="521" alt="image" src="https://github.com/user-attachments/assets/0a747caf-9c77-4f63-8ead-5b08feaa7e3b" />
 
 9. Main Function to Handle LLM Calls and Aggregation
 
-    
-    async def main():
-        results = await asyncio.gather(*[run_llm(model) for model in reference_models])
-        
-        # Display individual model responses
-        st.subheader("Individual Model Responses:")
-        for model, response in results:
-            with st.expander(f"Response from {model}"):
-                st.write(response)
-        
-        # Aggregate responses
-        st.subheader("Aggregated Response:")
-        finalStream = client.chat.completions.create(
-            model=aggregator_model,
-            messages=[
-                {"role": "system", "content": aggregator_system_prompt},
-                {"role": "user", "content": ",".join(response for _, response in results)},
-            ],
-            stream=True,
-        )
-        
+<img width="613" alt="image" src="https://github.com/user-attachments/assets/5b718f4b-8c83-4ab8-a13b-659faf694e5f" />
+
+       
         # Display aggregated response
         response_container = st.empty()
         full_response = ""
@@ -125,44 +65,15 @@ Step 3: Aggregates all responses using the aggregator model and streams the fina
 
 
 10. Trigger the Main Function
+<img width="372" alt="image" src="https://github.com/user-attachments/assets/c514139e-2e16-449b-b4f5-f2b35f33dcef" />
 
-
-    if st.button("Get Answer"):
-        if user_prompt:
-            asyncio.run(main())
-        else:
-            st.warning("Please enter a question.")
-    When the user clicks the "Get Answer" button, the app checks if a question has been entered.
 
     If a question is provided, it runs the main function to generate and display responses.
 
 11. Sidebar Information
     
-    
-    st.sidebar.title("About this app")
-    st.sidebar.write(
-        "This app demonstrates a Mixture-of-Agents approach using multiple Language Models (LLMs) "
-        "to answer a single question."
-    )
-    
-    st.sidebar.subheader("How it works:")
-    st.sidebar.markdown(
-        """
-        1. The app sends your question to multiple LLMs:
-            - Qwen/Qwen2-72B-Instruct
-            - Qwen/Qwen1.5-72B-Chat
-            - mistralai/Mixtral-8x22B-Instruct-v0.1
-            - databricks/dbrx-instruct
-        2. Each model provides its own response
-        3. All responses are then aggregated using Mixtral-8x22B-Instruct-v0.1
-        4. The final aggregated response is displayed
-        """
-    )
-    
-    st.sidebar.write(
-        "This approach allows for a more comprehensive and balanced answer by leveraging multiple AI models."
-    )
-    Adds a sidebar to the app with information about how the app works and the models used.
+<img width="526" alt="image" src="https://github.com/user-attachments/assets/393bb573-0bb1-4b73-aa98-b6e5bce24310" />
+
 
 What Does This App Do?
 
